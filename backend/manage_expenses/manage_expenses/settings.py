@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,8 +25,7 @@ SECRET_KEY = 'django-insecure-!*w@y#z&*2mv)4rz*8au(msr9z!%736e1wkm4r7(ai609_vm75
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -54,9 +53,52 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'manage_expenses.urls'
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',
-]
+if DEBUG:
+    CORS_ORIGIN_WHITELIST = [
+        "http://localhost:3000",
+    ]
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ]
+
+    CORS_ALLOW_METHODS = [
+        'GET',
+        'DELETE',
+        'POST',
+        'PUT',
+    ]
+    CORS_ORIGIN_ALLOW_ALL = True
+    CORS_ALLOW_HEADERS = [
+        'requestId',
+        'accept',
+        'accept-encoding',
+        'authorization',
+        'content-type',
+        'dnt',
+        'origin',
+        'user-agent',
+        'x-csrftoken',
+        'x-requested-with',
+    ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAdminUser',
+        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',  # Parse json packet
+        'rest_framework.parsers.FormParser',  # parse urlencoded packets
+        'rest_framework.parsers.MultiPartParser'  # parse from-data packet
+    ],
+
+}
 
 TEMPLATES = [
     {
@@ -106,7 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+AUTH_USER_MODEL = 'manage_expenses_app.BaseUserProfile'
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -122,7 +164,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

@@ -1,3 +1,6 @@
 from django.contrib import admin
+from django.contrib import auth
+from django.contrib.auth.models import Group
+from .models import BaseUserProfile
 
-# Register your models here.
+admin.site.register(BaseUserProfile)
