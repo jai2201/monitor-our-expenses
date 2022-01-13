@@ -11,9 +11,9 @@ from django.conf import settings
 class BaseUserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     fullname = models.CharField(max_length=50)
-    profile_picture = models.ImageField(upload_to='profile_picures', null=False , blank=False)
+    profile_picture = models.ImageField(upload_to='media/profile_picures', null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)  
+    is_admin = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
     # login using email
     USERNAME_FIELD = 'email'
@@ -40,10 +40,3 @@ class BaseUserProfile(AbstractBaseUser, PermissionsMixin):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
-    
-    @property
-    def default_profile_picture(self):
-        if self.profile_picture:
-            return "%s/%s" %(settings.MEDIA_URL, self.profile_picture)
-        else:
-            return settings.STATIC_URL + 'img/default_profile_picture.jpg'

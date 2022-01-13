@@ -8,4 +8,4 @@ from .views import (
 
 urlpatterns = [
     path('register/', CustomUserCreate.as_view(), name="register"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
