@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import BaseUserProfile
 from django.db import IntegrityError
+from rest_framework import fields
 
 class CustomUserCreateSerializser(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
@@ -22,4 +23,11 @@ class CustomUserCreateSerializser(serializers.ModelSerializer):
             user.save()
             return user
         except IntegrityError as exception:
-            raise Custom409(exception)
+            raise Exception('User with this email already exits.')
+
+class ResendEmailVerificationSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = BaseUserProfile
+        fields = ('email',)
