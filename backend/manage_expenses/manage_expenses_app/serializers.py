@@ -25,9 +25,39 @@ class CustomUserCreateSerializser(serializers.ModelSerializer):
         except IntegrityError as exception:
             raise Exception('User with this email already exits.')
 
-class ResendEmailVerificationSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(required=True)
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(write_only=True, required=True, min_length=8)
+    new_password = serializers.CharField(
+        write_only=True, required=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True, required=True, min_length=8)
 
     class Meta:
         model = BaseUserProfile
-        fields = ('email',)
+        fields = ('old_password', 'new_password', 'confirm_password')
+
+    def validate(self, data):
+        
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError("Password fields didn't match.")
+        return data
+
+    def validate_old_password(self, value):
+        user = self.context['user']
+        if not user.check_password(value):
+            raise serializers.ValidationError(
+                {"old_password": "Old password is not correct"})
+        return value
+
+class ForgotPasswordSerializer(serializers.ModelSerializer):
+
+    new_password = serializers.CharField(min_length=8, write_only=True)
+    confirm_new_password = serializers.CharField(min_length=8, write_only=True)
+    
+    class Meta:
+        model = BaseUserProfile
+        fields = ('new_password', 'confirm_new_password')
+
+        def validate(self, data):
+            if data['new_password'] != data['confirm_new_password']:
+                raise serializers.ValidationError("Password fields didn't match.")
+            return data
