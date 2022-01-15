@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny , IsAuthenticated
-from .serializers import CustomUserCreateSerializser, ChangePasswordSerializer, ForgotPasswordSerializer
+from .serializers import CustomUserCreateSerializser, ChangePasswordSerializer, ForgotPasswordSerializer, UpdateBaseUserProfileSerializer
 from rest_framework.response import Response
 from django.db import transaction
 from django.http.request import HttpRequest
@@ -150,7 +150,7 @@ class ResendEmailVerification(APIView):
 class ChangePassword(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self,request):
+    def post(self,request,format='json'):
         result = None
         try:
             user = request.user
@@ -243,5 +243,27 @@ class ResetForgotPassword(generics.UpdateAPIView):
             error_message=str(e)
             result = {
                 "header":getHeader(request_id=None, message='Invalid Token, Please Try again', status=status.HTTP_400_BAD_REQUEST,error_list=[error_message])
+            }
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateBaseUserProfile(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+
+        try:
+            user = request.user
+            serializer = UpdateBaseUserProfileSerializer(instance=user,data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                result = {
+                    "header": getHeader(request_id=user.id, message='Prodile Updated Successfully.', status=status.HTTP_200_OK, error_list=[])
+                }
+                return Response(result, status=status.HTTP_200_OK)
+        except Exception as e:
+            error_message = str(e)
+            result = {
+                "header":getHeader(request_id=None, message='Failed to update the profile, Please contact Admin.', status=status.HTTP_400_BAD_REQUEST,error_list=[error_message])
             }
             return Response(result, status=status.HTTP_400_BAD_REQUEST)

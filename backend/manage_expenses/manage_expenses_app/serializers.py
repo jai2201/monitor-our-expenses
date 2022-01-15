@@ -61,3 +61,12 @@ class ForgotPasswordSerializer(serializers.ModelSerializer):
             if data['new_password'] != data['confirm_new_password']:
                 raise serializers.ValidationError("Password fields didn't match.")
             return data
+
+
+class UpdateBaseUserProfileSerializer(serializers.ModelSerializer):
+    fullname = serializers.CharField(max_length=100, required=False)
+    profile_picture = serializers.ImageField(required=False)
+
+    class Meta:
+        model = BaseUserProfile
+        fields = ('fullname', 'profile_picture')
