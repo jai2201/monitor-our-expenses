@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny , IsAuthenticated
-from .serializers import CustomUserCreateSerializser, ChangePasswordSerializer, ForgotPasswordSerializer, UpdateBaseUserProfileSerializer
+from .serializers import (CustomUserCreateSerializser, ChangePasswordSerializer, ForgotPasswordSerializer,
+UpdateBaseUserProfileSerializer, ContactAdminSerializer)
 from rest_framework.response import Response
 from django.db import transaction
 from django.http.request import HttpRequest
@@ -251,7 +252,6 @@ class UpdateBaseUserProfile(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
-
         try:
             user = request.user
             serializer = UpdateBaseUserProfileSerializer(instance=user,data=request.data)
@@ -267,3 +267,32 @@ class UpdateBaseUserProfile(generics.UpdateAPIView):
                 "header":getHeader(request_id=None, message='Failed to update the profile, Please contact Admin.', status=status.HTTP_400_BAD_REQUEST,error_list=[error_message])
             }
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ContactAdmin(APIView):
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, format='json'):
+
+        try:
+
+            if not request.user.is_anonymous:
+                context={'email':request.user.email}
+            else:
+                context={'email':request.data['email']}
+
+            serializer = ContactAdminSerializer(data=request.data,context=context)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                result = {
+                    "header": getHeader(request_id=None, message='Query Sent Successfully, You will be contacted soon.', status=status.HTTP_200_OK, error_list=[])
+                }
+                return Response(result, status=status.HTTP_200_OK)
+        except Exception as e:
+            error_message = str(e)
+            result = {
+                "header":getHeader(request_id=None, message='Cannot send your query, Please retry.', status=status.HTTP_500_INTERNAL_SERVER_ERROR, error_list=[error_message])
+            }
+            return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

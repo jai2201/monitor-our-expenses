@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import BaseUserProfile
+from .models import BaseUserProfile, UserQueries
 from django.db import IntegrityError
 from rest_framework import fields
 
@@ -70,3 +70,23 @@ class UpdateBaseUserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseUserProfile
         fields = ('fullname', 'profile_picture')
+
+class ContactAdminSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False)
+    message = serializers.CharField(max_length=1000, required=True)
+
+    class Meta:
+        model = UserQueries
+        fields = ('email', 'message')
+
+    def create(self,validated_data):
+        try:
+            print(self.context['email'])
+            query = UserQueries(
+                email=self.context['email'],
+                query=validated_data['message'],
+            )
+            query.save()
+            return query
+        except IntegrityError as exception:
+            raise Exception('Not able to create')

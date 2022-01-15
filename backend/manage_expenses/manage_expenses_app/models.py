@@ -40,3 +40,11 @@ class BaseUserProfile(AbstractBaseUser, PermissionsMixin):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+class UserQueries(models.Model):
+    email = models.EmailField()
+    query = models.CharField(max_length=1000)
+    is_solved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.id) + ' : ' + self.email
