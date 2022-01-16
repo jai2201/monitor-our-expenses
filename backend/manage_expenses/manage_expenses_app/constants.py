@@ -11,3 +11,8 @@ SPLIT_TYPE = [
     ('Unequally','Unequally'),
     ('By percentages','By Percentages'),
 ]
+
+TRANSACTION_TYPE = [
+    ('TO_PAY', 'TO_PAY'),
+    ('TO_RECEIVE', 'TO_RECEIVE')
+]

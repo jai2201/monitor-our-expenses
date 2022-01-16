@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser , PermissionsMixin
 from .managers import CustomUserManager
 from django.conf import settings
-from .constants import GROUP_TYPE_CHOICES, SPLIT_TYPE
+from .constants import GROUP_TYPE_CHOICES, SPLIT_TYPE, TRANSACTION_TYPE
 # need to import Program model
 
 
@@ -46,13 +46,22 @@ class Expense(models.Model):
     total_amount = models.IntegerField(default=0)
     description = models.CharField(max_length=1000)
     split_type = models.CharField(max_length=100, choices=SPLIT_TYPE)
-    with_whom_to_split = models.ForeignKey(BaseUserProfile, on_delete=models.CASCADE,related_name="with_whom_to_split")
-    amount_you_have_to_pay = models.IntegerField(default=0)
-    amount_you_will_receive = models.IntegerField(default=0)
+    # with_whom_to_split = models.ForeignKey(BaseUserProfile, on_delete=models.CASCADE,related_name="with_whom_to_split")
+    # amount_you_have_to_pay = models.IntegerField(default=0)
+    # amount_you_will_receive = models.IntegerField(default=0)
+    who_has_paid = models.ManyToManyField('BaseUserProfile', related_name='who_all_has_paid')
+    with_whom_to_split = models.ManyToManyField('BaseUserProfile', related_name='with_whom_to_split')
     date = models.DateTimeField(auto_now_add=True)
-    note = models.CharField(max_length=500)
+    note = models.CharField(max_length=500, null=True, blank=True)
     added_by = models.ForeignKey(BaseUserProfile, on_delete=models.CASCADE, related_name="added_by")
     is_setteled = models.BooleanField(default=False)
+
+class Transaction(models.Model):
+    created_by = models.ForeignKey(BaseUserProfile, on_delete=models.CASCADE, related_name='owner_of_transaction')
+    with_whom = models.ForeignKey(BaseUserProfile, on_delete=models.CASCADE, related_name='with_whom_transaction_is_made')
+    type_of_transaction = models.CharField(max_length=100, default='TO_PAY' , choices=TRANSACTION_TYPE)
+    amount_to_exchange = models.IntegerField(default=0)
+    expense = models.ForeignKey(Expense, on_delete=models.CASCADE)
 
 class ExpensesGroup(models.Model):
     group_name = models.CharField(max_length=100)
