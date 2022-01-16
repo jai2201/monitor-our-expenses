@@ -5,13 +5,14 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser , PermissionsMixin
 from .managers import CustomUserManager
 from django.conf import settings
+from .constants import GROUP_TYPE_CHOICES, SPLIT_TYPE
 # need to import Program model
 
 
 class BaseUserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     fullname = models.CharField(max_length=50)
-    profile_picture = models.ImageField(upload_to='media/profile_picures', null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_picures', null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
@@ -40,6 +41,31 @@ class BaseUserProfile(AbstractBaseUser, PermissionsMixin):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+class Expense(models.Model):
+    total_amount = models.IntegerField(default=0)
+    description = models.CharField(max_length=1000)
+    split_type = models.CharField(max_length=100, choices=SPLIT_TYPE)
+    with_whom_to_split = models.ForeignKey(BaseUserProfile, on_delete=models.CASCADE,related_name="with_whom_to_split")
+    amount_you_have_to_pay = models.IntegerField(default=0)
+    amount_you_will_receive = models.IntegerField(default=0)
+    date = models.DateTimeField(auto_now_add=True)
+    note = models.CharField(max_length=500)
+    added_by = models.ForeignKey(BaseUserProfile, on_delete=models.CASCADE, related_name="added_by")
+    is_setteled = models.BooleanField(default=False)
+
+class ExpensesGroup(models.Model):
+    group_name = models.CharField(max_length=100)
+    group_type = models.CharField(max_length=200, choices=GROUP_TYPE_CHOICES, default='Friends')
+    members = models.ManyToManyField('BaseUserProfile', blank=False, related_name='groups_list')
+    expenses = models.ManyToManyField('Expense',blank=True, related_name='groups_list_for_this_expense')
+    group_picture = models.ImageField(upload_to='group_pictures',null=True,blank=True)
+
+class Comment(models.Model):
+    comment_message = models.CharField(max_length=1000)
+    commented_by = models.ForeignKey(BaseUserProfile, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    expense = models.ForeignKey(Expense, on_delete=models.CASCADE)
 
 class UserQueries(models.Model):
     email = models.EmailField()
